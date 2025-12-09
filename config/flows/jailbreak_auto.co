@@ -1,0 +1,5 @@
+
+define user cluster_0_attack
+    "ai" "rules" "assistant" "unrestricted" "standard" "restrictions" "experimental" "pretend" "bound" "morals"
+    (/ai|rules|assistant|unrestricted|standard|restrictions|experimental|pretend|bound|morals/i)
+    

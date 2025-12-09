@@ -1,0 +1,9 @@
+models:
+  - type: main
+    mode: chat
+    engine: nim
+    model: meta/llama-3.1-8b-instruct
+    parameters:
+      temperature: 0.2
+    api_key: ${NVIDIA_API_KEY}
+    base_url: https://integrate.api.nvidia.com/v1

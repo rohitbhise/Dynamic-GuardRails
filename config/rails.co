@@ -1,0 +1,20 @@
+define user express greeting
+  "hello"
+  "hi"
+  "hey"
+
+define bot express greeting
+  "Hello from NVIDIA NIM Guardrails!"
+
+define flow main_greeting
+  user express greeting
+  bot express greeting
+
+# Jailbreak detection flow
+define bot refuse jailbreak
+  "I'm unable to help with that request. I detected an attack.Please ask something else."
+
+define flow jailbreak_detection
+  user cluster_0_attack
+  bot refuse jailbreak
+  stop
