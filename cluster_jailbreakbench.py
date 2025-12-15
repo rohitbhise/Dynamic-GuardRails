@@ -6,49 +6,50 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import DBSCAN
-from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 
-# --- Load jailbreak data ---
+# --- Load JailbreakBench data ---
 data = []
+categories = []
 
-# Try to load from JSONL first, then fall back to JSON
-jsonl_path = "jailbreak_data/jailbreak_attempts.jsonl"
-json_path = "jailbreak_data/jailbreak.json"
+jailbreakbench_path = "jailbreak_data/jailbreakbench.json"
 
-if os.path.exists(jsonl_path) and os.path.getsize(jsonl_path) > 0:
-    print(f"Loading data from {jsonl_path}")
-    with open(jsonl_path, "r") as f:
-        for line in f:
-            data.append(json.loads(line)["text"])
-elif os.path.exists(json_path):
-    print(f"Loading data from {json_path}")
-    with open(json_path, "r") as f:
-        json_data = json.load(f)
-        for item in json_data:
-            data.append(item["text"])
-else:
-    raise FileNotFoundError(
-        "No jailbreak data file found. Please create either jailbreak_attempts.jsonl or jailbreak.json"
-    )
+print(f"Loading data from {jailbreakbench_path}")
+with open(jailbreakbench_path, "r") as f:
+    json_data = json.load(f)
+    for item in json_data:
+        data.append(item["text"])
+        categories.append(item.get("category", "Unknown"))
 
-print(f"Loaded {len(data)} jailbreak examples")
+print(f"Loaded {len(data)} harmful behavior examples")
+print(f"\nCategory distribution:")
+category_counts = {}
+for cat in categories:
+    category_counts[cat] = category_counts.get(cat, 0) + 1
+for cat, count in sorted(category_counts.items()):
+    print(f"  {cat}: {count} examples")
 
 # --- Embed using SBERT ---
+print("\nGenerating embeddings...")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 embeddings = model.encode(data, show_progress_bar=True)
 
-# --- Cluster using DBSCAN ---
-# Optimized parameters: eps=0.35 gives best silhouette score (0.424)
-dbscan = DBSCAN(eps=0.35, min_samples=2, metric="cosine")
+# --- Cluster using DBSCAN (optimized for pattern discovery) ---
+print(
+    "\nClustering with DBSCAN (eps=0.4, min_samples=2) - optimized for tight patterns..."
+)
+dbscan = DBSCAN(eps=0.5, min_samples=2, metric="cosine")
 labels = dbscan.fit_predict(embeddings)
 
 clusters = defaultdict(list)
-for text, label in zip(data, labels):
+cluster_categories = defaultdict(lambda: defaultdict(int))
+
+for text, label, category in zip(data, labels, categories):
     if label == -1:
         continue  # ignore noise
     clusters[label].append(text)
+    cluster_categories[label][category] += 1
 
 
 # --- Extract TF-IDF keywords for each cluster ---
@@ -65,11 +66,20 @@ cluster_patterns = {}
 
 for cid, texts in clusters.items():
     keywords = extract_keywords(texts)
-    cluster_patterns[int(cid)] = {"examples": texts[:5], "keywords": keywords}
+
+    # Get the dominant categories for this cluster
+    cat_dist = dict(cluster_categories[cid])
+
+    cluster_patterns[int(cid)] = {
+        "examples": texts[:5],
+        "keywords": keywords,
+        "size": len(texts),
+        "category_distribution": cat_dist,
+    }
 
 # --- Save results ---
 os.makedirs("pipeline", exist_ok=True)
-output_path = "pipeline/cluster_patterns.json"
+output_path = "pipeline/jailbreakbench_clusters.json"
 
 with open(output_path, "w") as f:
     json.dump(cluster_patterns, f, indent=2)
@@ -83,22 +93,28 @@ print(f"Noise points (unclustered): {list(labels).count(-1)}")
 print(f"Output saved to: {output_path}")
 print(f"{'=' * 60}\n")
 
+# Print cluster summary
+print("Cluster Summary:")
+print("-" * 80)
+for cid in sorted(cluster_patterns.keys()):
+    cluster = cluster_patterns[cid]
+    print(f"\nCluster {cid} ({cluster['size']} examples):")
+    print(f"  Top keywords: {', '.join(cluster['keywords'][:5])}")
+    print(f"  Categories: {cluster['category_distribution']}")
+    print(f"  Example: {cluster['examples'][0][:80]}...")
+
 # --- Visualize clusters ---
+print("\n" + "=" * 60)
 print("Generating visualizations...")
+print("=" * 60)
 
-# Reduce dimensions for visualization (384 dims -> 2 dims)
-# Method 1: PCA (faster, linear)
-pca = PCA(n_components=2)
-embeddings_2d_pca = pca.fit_transform(embeddings)
-
-# Method 2: t-SNE (slower, non-linear, better for clusters)
+# Reduce dimensions for visualization using t-SNE only
 tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(data) - 1))
 embeddings_2d_tsne = tsne.fit_transform(embeddings)
 
-# Create figure with two subplots
-fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+# Create single t-SNE plot
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
 
-# Plot 1: PCA
 unique_labels = set(labels)
 colors = plt.cm.Spectral(np.linspace(0, 1, len(unique_labels)))
 
@@ -113,36 +129,7 @@ for label, color in zip(unique_labels, colors):
         label_name = f"Cluster {label}"
 
     mask = labels == label
-    axes[0].scatter(
-        embeddings_2d_pca[mask, 0],
-        embeddings_2d_pca[mask, 1],
-        c=[color],
-        label=label_name,
-        s=100,
-        marker=marker,
-        alpha=0.7,
-        edgecolors="black",
-        linewidth=0.5,
-    )
-
-axes[0].set_title("Jailbreak Clusters (PCA)", fontsize=14, fontweight="bold")
-axes[0].set_xlabel("First Principal Component")
-axes[0].set_ylabel("Second Principal Component")
-axes[0].legend()
-axes[0].grid(True, alpha=0.3)
-
-# Plot 2: t-SNE
-for label, color in zip(unique_labels, colors):
-    if label == -1:
-        color = [0, 0, 0, 1]
-        marker = "x"
-        label_name = "Noise"
-    else:
-        marker = "o"
-        label_name = f"Cluster {label}"
-
-    mask = labels == label
-    axes[1].scatter(
+    ax.scatter(
         embeddings_2d_tsne[mask, 0],
         embeddings_2d_tsne[mask, 1],
         c=[color],
@@ -150,18 +137,18 @@ for label, color in zip(unique_labels, colors):
         s=100,
         marker=marker,
         alpha=0.7,
-        edgecolors="black",
-        linewidth=0.5,
+        edgecolors="black" if marker == "o" else None,
+        linewidth=0.5 if marker == "o" else 0,
     )
 
-axes[1].set_title("Jailbreak Clusters (t-SNE)", fontsize=14, fontweight="bold")
-axes[1].set_xlabel("t-SNE Component 1")
-axes[1].set_ylabel("t-SNE Component 2")
-axes[1].legend()
-axes[1].grid(True, alpha=0.3)
+ax.set_title("JailbreakBench Clusters (t-SNE)", fontsize=14, fontweight="bold")
+ax.set_xlabel("t-SNE Component 1")
+ax.set_ylabel("t-SNE Component 2")
+ax.legend()
+ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-viz_path = "pipeline/cluster_visualization.png"
+viz_path = "pipeline/jailbreakbench_visualization.png"
 plt.savefig(viz_path, dpi=300, bbox_inches="tight")
 print(f"✓ Visualization saved to: {viz_path}")
 plt.close()
@@ -169,8 +156,8 @@ plt.close()
 # --- Create a bar chart showing cluster sizes ---
 fig, ax = plt.subplots(figsize=(10, 6))
 
-cluster_ids = list(cluster_patterns.keys())
-cluster_sizes = [len(clusters[int(cid)]) for cid in cluster_ids]
+cluster_ids = sorted(cluster_patterns.keys())
+cluster_sizes = [cluster_patterns[cid]["size"] for cid in cluster_ids]
 
 bars = ax.bar(
     cluster_ids,
@@ -179,7 +166,7 @@ bars = ax.bar(
 )
 ax.set_xlabel("Cluster ID", fontsize=12)
 ax.set_ylabel("Number of Examples", fontsize=12)
-ax.set_title("Cluster Size Distribution", fontsize=14, fontweight="bold")
+ax.set_title("JailbreakBench Cluster Size Distribution", fontsize=14, fontweight="bold")
 ax.grid(True, alpha=0.3, axis="y")
 
 # Add value labels on bars
@@ -209,7 +196,7 @@ ax.text(
 )
 
 plt.tight_layout()
-size_viz_path = "pipeline/cluster_sizes.png"
+size_viz_path = "pipeline/jailbreakbench_cluster_sizes.png"
 plt.savefig(size_viz_path, dpi=300, bbox_inches="tight")
 print(f"✓ Cluster size chart saved to: {size_viz_path}")
 plt.close()
