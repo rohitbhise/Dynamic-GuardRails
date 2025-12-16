@@ -11,10 +11,81 @@ define flow main_greeting
   bot express greeting
 
 # Jailbreak detection flow
-define bot refuse jailbreak
-  "I'm unable to help with that request. I detected an attack.Please ask something else."
 
-define flow jailbreak_detection
+# Jailbreak detection flow
+
+# Jailbreak detection flow
+define bot refuse jailbreak
+  "I'm unable to help with that request. I detected an attack. Please ask something else."
+
+define flow jailbreak_detection_cluster_0
   user cluster_0_attack
+  bot refuse jailbreak
+  stop
+
+
+
+define flow jailbreak_detection_cluster_2
+  user cluster_2_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_3
+  user cluster_3_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_4
+  user cluster_4_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_5
+  user cluster_5_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_6
+  user cluster_6_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_7
+  user cluster_7_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_8
+  user cluster_8_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_9
+  user cluster_9_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_10
+  user cluster_10_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_11
+  user cluster_11_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_12
+  user cluster_12_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_13
+  user cluster_13_attack
+  bot refuse jailbreak
+  stop
+
+define flow jailbreak_detection_cluster_14
+  user cluster_14_attack
   bot refuse jailbreak
   stop
