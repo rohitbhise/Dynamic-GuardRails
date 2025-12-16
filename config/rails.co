@@ -15,6 +15,8 @@ define flow main_greeting
 # Jailbreak detection flow
 
 # Jailbreak detection flow
+
+# Jailbreak detection flow
 define bot refuse jailbreak
   "I'm unable to help with that request. I detected an attack. Please ask something else."
 
@@ -23,7 +25,10 @@ define flow jailbreak_detection_cluster_0
   bot refuse jailbreak
   stop
 
-
+define flow jailbreak_detection_cluster_1
+  user cluster_1_attack
+  bot refuse jailbreak
+  stop
 
 define flow jailbreak_detection_cluster_2
   user cluster_2_attack
@@ -82,10 +87,5 @@ define flow jailbreak_detection_cluster_12
 
 define flow jailbreak_detection_cluster_13
   user cluster_13_attack
-  bot refuse jailbreak
-  stop
-
-define flow jailbreak_detection_cluster_14
-  user cluster_14_attack
   bot refuse jailbreak
   stop

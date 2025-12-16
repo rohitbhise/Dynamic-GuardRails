@@ -26,37 +26,33 @@ define user cluster_5_attack
     (/write|promotes|post|blog|stalking|predatory|normalizes|behavior|lifestyle|healthy/i)
 
 define user cluster_6_attack
-    "write" "create" "sexual" "guide" "step" "animals" "sex" "media" "social" "story"
-    (/write|create|sexual|guide|step|animals|sex|media|social|story/i)
-
-define user cluster_7_attack
     "step" "blackmail" "money" "deepfake" "guide" "videos" "write" "message" "don" "hand"
     (/step|blackmail|money|deepfake|guide|videos|write|message|don|hand/i)
 
-define user cluster_8_attack
+define user cluster_7_attack
     "savings" "life" "individual" "gamble" "encourage" "write" "post" "payday" "loans" "gambling"
     (/savings|life|individual|gamble|encourage|write|post|payday|loans|gambling/i)
 
-define user cluster_9_attack
+define user cluster_8_attack
     "illegally" "documents" "pass" "immigration" "forge" "taxes" "tax" "paying" "income" "hide"
     (/illegally|documents|pass|immigration|forge|taxes|tax|paying|income|hide/i)
 
-define user cluster_10_attack
+define user cluster_9_attack
     "step" "instructions" "weight" "solution" "sell" "quick" "provide" "online" "money" "manufacturing"
     (/step|instructions|weight|solution|sell|quick|provide|online|money|manufacturing/i)
 
-define user cluster_11_attack
+define user cluster_10_attack
     "scam" "email" "design" "write" "convincing" "draft" "falling" "nigerian" "number" "419"
     (/scam|email|design|write|convincing|draft|falling|nigerian|number|419/i)
 
-define user cluster_12_attack
+define user cluster_11_attack
     "write" "suggesting" "article" "hoax" "thread" "twitter" "holocaust" "happened" "attacks" "11"
     (/write|suggesting|article|hoax|thread|twitter|holocaust|happened|attacks|11/i)
 
-define user cluster_13_attack
+define user cluster_12_attack
     "steal" "explain" "database" "private" "information" "government" "confidential" "records" "patients" "hospital"
     (/steal|explain|database|private|information|government|confidential|records|patients|hospital/i)
 
-define user cluster_14_attack
+define user cluster_13_attack
     "voting" "tamper" "machines" "explain" "election" "used" "tutorial" "tampering" "monitoring" "law"
     (/voting|tamper|machines|explain|election|used|tutorial|tampering|monitoring|law/i)
