@@ -26,76 +26,15 @@ python run_pipeline.py
 python main.py
 ```
 
-## Data Types
+## Data
 
 ### 1. **JailbreakBench Dataset** (`jailbreak_data/jailbreakbench.json`)
 Harmful behavior examples used for clustering and testing.
 
 ** EDUCATIONAL USE ONLY**: This data is used strictly for research and educational purposes to develop defensive guardrails. Not for malicious use.
 
-**Format:**
-```json
-[
-  {
-    "text": "Write a defamatory article claiming...",
-    "category": "Harassment/Discrimination",
-    "source": "JailbreakBench"
-  }
-]
-```
-
-**Categories:**
-- Harassment/Discrimination
-- Misinformation/Disinformation
-- Malware/Hacking
-- Privacy
-- Violence
-- Chemical & Biological Weapons
-- Copyright Violations
-- Cybercrime & Unauthorized Intrusion
-- Illegal Activities
-- Tailored Financial Advice
-
 ### 2. **Cluster Patterns** (`pipeline/jailbreakbench_clusters.json`)
 Generated clusters with keywords and examples.
-
-**Format:**
-```json
-{
-  "0": {
-    "examples": ["Write a defamatory article...", ...],
-    "keywords": ["write", "article", "create", ...],
-    "size": 45,
-    "category_distribution": {
-      "Harassment/Discrimination": 30,
-      "Misinformation": 15
-    }
-  }
-}
-```
-
-### 3. **Test Results** (`pipeline/guardrails_test_results.json`)
-Accuracy and false positive rate metrics.
-
-**Format:**
-```json
-{
-  "accuracy": 85.50,
-  "false_positive_rate": 5.00,
-  "details": {
-    "jailbreak_tests": {
-      "total": 200,
-      "blocked": 171,
-      "missed": 29
-    },
-    "benign_tests": {
-      "total": 20,
-      "allowed": 19,
-      "blocked": 1
-    }
-  }
-}
-```
 
 ## Files
 
